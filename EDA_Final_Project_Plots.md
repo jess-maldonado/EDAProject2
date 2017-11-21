@@ -1,0 +1,268 @@
+---
+title: "Exploratory Data Analysis Project 2"
+output:
+  html_document:
+    keep_md: true
+---
+
+
+
+### Project Overview  
+
+In this project, we were provided a dataset of PM2.5 emissions from various sources and locations over the years of 1999 - 2008. The questions are all looking for creative ways of visualizing trends over this time.  
+
+The data provided was one file with the location (fips, which is a national code to designate counties), type of emission, year, and total amount of emissions in tons. The second file had more descriptive information about the different sources of PM2.5 emissions, which I was able to join to the first file through the "SCC" column.  
+
+Since this data needs to be joined to be useful, all code and plots in this project use the following variable as the base:   
+
+
+```r
+plotall <- 
+  left_join(data, source, by = "SCC")
+```
+
+<br>
+
+#### 1. Have total emissions from PM2.5 decreased in the United States from 1999 to 2008? Using the base plotting system, make a plot showing the total PM2.5 emission from all sources for each of the years 1999, 2002, 2005, and 2008.  
+
+Indeed, total emissions from PM2.5 have decreased between 1999 and 2008, with the biggest decreases in 2002 and 2008. Comparing emissions in 2008 to emissions in 1999, total levels have fallen over 50% in that 19 year period.  
+
+
+
+
+<img src="EDA_Final_Project_Plots_files/figure-html/Plot1-1.png" style="display: block; margin: auto;" />
+
+#### Code for the plot above: 
+
+
+```r
+plot1 <-
+  plotall %>%
+  group_by(year) %>%
+  summarize(total_pm25 = sum(Emissions)/1000000)
+```
+
+
+```r
+plot(plot1$year, plot1$total_pm25,
+     xlab = "Year",
+     ylab = "Total PM2.5 Emissions (megatons)",
+     xaxt = 'n',
+     main = "Total PM2.5 Emissions from 1999 - 2008",
+     sub = "The bue line is an overall trend line",
+     ylim = c(2,8),
+     cex.sub = .75, 
+     col = "black")
+mtext("Emissions have fallen by over 50% in 19 years")
+abline(lm(plot1$total_pm25 ~ plot1$year), col = "blue")
+axis(1, at = c(1999,2002,2005,2008), col = "black")
+text(plot1$year, plot1$total_pm25 - .5, labels = (round(plot1$total_pm25, digits = 2)), col = "red")
+```
+  
+<br>
+
+#### 2. Have total emissions from PM2.5 decreased in the Baltimore City, Maryland (fips == "24510") from 1999 to 2008? Use the base plotting system to make a plot answering this question.  
+
+Total emissions in Baltimore have also decreased, almost 50% in the 19 year period. However, in comparison to the overall pattern, Baltimore City saw a large spike in emissions in 2005 that ultimately decreased in 2008. 
+
+
+
+<img src="EDA_Final_Project_Plots_files/figure-html/Plot2-1.png" style="display: block; margin: auto;" />
+
+
+#### Code for the plot above:  
+
+```r
+plot2 <-
+  plotall %>%
+  filter(fips == '24510') %>%
+  group_by(year) %>%
+  summarize(total_pm25 = sum(Emissions))
+```
+
+
+```r
+plot(plot2$year, plot2$total_pm25,
+     type = "p",
+     xlab = "Year",
+     ylab = "Total PM2.5 Emissions (tons)",
+     xaxt = 'n',
+     main = "Emissions in Baltimore between 1999 - 2008",
+     sub = "The blue line is trend line",
+     ylim = c(1500, 3500),
+     xlim = c(1998, 2009))
+mtext("Emissions spiked in 2005 but overall have fallen since 1999", cex = .75)
+abline(lm(plot2$total_pm25 ~ plot2$year), col = "blue")
+axis(1, at = c(1999,2002,2005,2008))
+text(plot2$year, plot2$total_pm25 - 250, labels = (round(plot2$total_pm25, digits = 0)), col = "red")
+```
+
+<br>
+#### 3. Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999-2008 for Baltimore City? Which have seen increases in emissions from 1999-2008? Use the ggplot2 plotting system to make a plot answer this question.
+
+All types except for "Point" decreased over this 19 year period. In this chart, you can see that "Point" emissions were the major cause for the overall spike on 2005, as all other types either decreased or only increased slightly from 2002 - 2005.  
+
+
+
+<img src="EDA_Final_Project_Plots_files/figure-html/Plot3-1.png" style="display: block; margin: auto;" />
+
+
+#### Code for the plot above:  
+
+```r
+plot3 <- plotall %>%
+  filter(fips == '24510') %>%
+  group_by(year, type) %>%
+  summarize(total_pm25 = sum(Emissions))
+```
+
+
+```r
+ggplot(data = plot3, mapping = aes(year, total_pm25)) +
+  geom_point(aes(color = type, shape = type)) +
+  geom_smooth(method = "lm", se = FALSE, aes(color = type)) +
+  scale_x_continuous("Year", breaks = c(1999,2002,2005,2008)) +
+  labs(title = "PM2.5 Emissions in Baltimore from 1999 - 2008",
+       subtitle = "All types except for 'Point' decreased over this period.",
+       y = "PM2.5 Emissions in Tons",
+       caption = "Points indicate specific year measurements. Lines indicate the overall trend throughout the period.",
+       color = "Emission type",
+       shape = "Emission type")
+```
+
+<br>
+#### 4. Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008?
+
+There are a variety of different types of coal combustion-related emission sources, and I have laid out the separate data for each below, using axes appropriate to the specific source levels. You can see that all types of emissions besides Industrial and Total Area Source decreased or stayed flat during this time.  
+
+There was a spike in Industrial emissions in 2002 and 2005, but the 2008 levels are only slightly higher than the 1999 levels. Total Area Source Fuel combustion went from 0 to .1 in 2005 which seems drastic on the graph, but ultimately is not relevant when you consider that Electric Generation emissions were still over 300 kilotons in 2008. 
+
+
+
+<img src="EDA_Final_Project_Plots_files/figure-html/Plot4-1.png" style="display: block; margin: auto;" />
+
+To see the actual scale of the different sources, below is a plot with all sources on one axis. Electric Generation is by far the largest contributing source, with Industrial a far second, and the rest seemingly negligent to the total emission volume.  
+
+<img src="EDA_Final_Project_Plots_files/figure-html/Plot4.2-1.png" style="display: block; margin: auto;" />
+
+#### Code for the plots above:  
+
+
+```r
+plot4 <- 
+  plotall %>% 
+  filter(str_detect(Short.Name,'[Cc]oal'), str_detect(SCC.Level.One, '[Cc]omb'), SCC.Level.Two != "Space Heaters") %>%
+  group_by(year, SCC.Level.Two) %>%
+  summarize(emissionsKT = sum(Emissions)/1000)
+```
+
+
+```r
+# Code for first plot
+plot4 %>%
+  ggplot(aes(year, emissionsKT)) +
+  geom_line() +
+  facet_wrap( ~ SCC.Level.Two, scales = "free") + 
+  scale_x_continuous("Year", breaks = c(1999,2002,2005,2008)) +
+  labs(title = "Total Emissions of PM2.5 in Kilotons over 1999 - 2008",
+       subtitle = "Industrial emissions spiked 3x before coming down in 2008\nBoth Commercial and Residential emissions have decreased by close to 80%",
+       y = "PM2.5 Emissions (kilotons)")
+```
+
+
+```r
+# Code for second plot
+plot4 %>%
+  ggplot(aes(year, emissionsKT)) +
+  geom_line(aes(color = SCC.Level.Two)) +
+  scale_x_continuous("Year", breaks = c(1999,2002,2005,2008)) +
+  labs(title = "Total Emissions of PM2.5 in Kilotons over 1999 - 2008",
+       subtitle = "There was dramatic decrease in emissions from electric generation in 2008",
+       y = "PM2.5 Emissions (kilotons)",
+       color = "Emission Type")
+```
+<br>  
+#### 5. How have emissions from motor vehicle sources changed from 1999-2008 in Baltimore City?  
+
+The major change over time is in emissions from gasoline vehicles. You can see that diesel emissions stayed relatively flat from 1999 - 2008, but gasoline vehicle emissions decreased dramatically over that time, likely due to more hybrid cars on the road over time.  
+
+
+
+<img src="EDA_Final_Project_Plots_files/figure-html/Plot5-1.png" style="display: block; margin: auto;" />
+
+
+#### Code for the plot above:
+
+
+```r
+plot5 <- 
+  plotall %>%
+  filter(str_detect(Short.Name,'[Vv]ehicle'), SCC.Level.One == 'Mobile Sources', fips == '24510') %>%
+  group_by(year, SCC.Level.Two) %>%
+  summarize(total = sum(Emissions))
+```
+  
+
+```r
+ggplot(plot5, aes(year, total)) + 
+  geom_line(aes(color = SCC.Level.Two)) +
+  scale_x_continuous("Year", breaks = c(1999,2002,2005,2008)) +
+  labs(color = "Fuel Type",
+       y = "PM2.5 Emissions (tons)",
+       title = "Motor Vehicle Emissions have dramatically decreased in Baltimore City since 1999",
+       subtitle = "Diesel vehicle emissions have stayed relatively flat, with the big difference coming from a huge decrease in gasoline vehicle emissions")
+```
+<br> 
+#### 6. Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions? 
+
+The first plot shows the points and overall trend for both counties, and at first glance it seems that the slope of LA's emissions is steeper. This first chart seems misleading due to different axes - however, the scale of the emissions is so different, that showing both counties on one axis wouldn't give much insight into Baltimore's trends.  
+
+The second plot tells a more accurate story. It's clear from the first plot that the raw volume decrease in emissions is larger in LA due to the huge difference in scale. However, the second plot compares subsequent years' total emissions to emissions in 1999, and there is a clear difference in percent change. While Baltimore's emissions are down -66% compared to 1999, LA is only down -40%. Ultimately the decrease in LA County is more impactful to the total emission volume, but percentage-wise Baltimore has done better at getting emissions down.  
+
+
+<img src="EDA_Final_Project_Plots_files/figure-html/Plot6-1.png" style="display: block; margin: auto;" />
+
+<img src="EDA_Final_Project_Plots_files/figure-html/Plot6.2-1.png" style="display: block; margin: auto;" />
+
+
+#### Code for the plots above:  
+
+
+```r
+plot6 <- 
+  plotall %>%
+  filter(str_detect(Short.Name,'[Vv]ehicle'), SCC.Level.One == 'Mobile Sources',
+         fips =='06037'| fips == '24510') %>%
+  group_by(fips, year) %>%
+  summarize(total = sum(Emissions)) %>%
+  mutate(first_value = first(total), pct_diff = (total / first_value)-1) %>%
+  mutate(County = (case_when(fips == "06037" ~ "Los Angeles County",
+                            fips == "24510" ~ "Baltimore City")))
+```
+
+
+```r
+ggplot(plot6, aes(year, total)) + 
+  geom_point(aes(color = County, size = 2)) +
+  geom_line(aes(color = County)) +
+  geom_smooth(linetype = "dashed", method = "lm", se = FALSE, col = "red") +
+  scale_x_continuous("Year", breaks = c(1999,2002,2005,2008)) +
+  facet_wrap( ~ County, scales = "free") +
+  guides(size=FALSE) +
+  labs(title = "Motor Vehicle PM2.5 Emissions in Baltimore City and Los Angeles County from 1999 - 2008",
+       subtitle = "Both counties had large decreases in motor vehicle PM2.5 emissions in 19 years",
+       caption = "Dashed red line represents line of best fit",
+       y = "Total PM2.5 Emissions (tons)")
+```
+
+
+```r
+ggplot(plot6, aes(year, pct_diff, fill = County, label = paste((round((pct_diff*100),2)),"%"))) + 
+  geom_col(aes(fill = County)) +
+  scale_x_continuous("Year", breaks = c(1999,2002,2005,2008)) +
+  facet_wrap( ~ County) +
+  geom_text(nudge_y = -.03) +
+  scale_y_continuous("Percent Change", labels = scales::percent) +
+  labs(title = "Percent Change in Motor Vehicle Emissions From 1999",
+       subtitle = "Although LA County had the larger decrease in volume, Baltimore City had a higher percentage decrease")
+```
