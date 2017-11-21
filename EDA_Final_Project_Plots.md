@@ -20,8 +20,7 @@ Since this data needs to be joined to be useful, all code and plots in this proj
 plotall <- 
   left_join(data, source, by = "SCC")
 ```
-
-<br>
+  
 
 #### 1. Have total emissions from PM2.5 decreased in the United States from 1999 to 2008? Using the base plotting system, make a plot showing the total PM2.5 emission from all sources for each of the years 1999, 2002, 2005, and 2008.  
 
@@ -59,7 +58,6 @@ axis(1, at = c(1999,2002,2005,2008), col = "black")
 text(plot1$year, plot1$total_pm25 - .5, labels = (round(plot1$total_pm25, digits = 2)), col = "red")
 ```
   
-<br>
 
 #### 2. Have total emissions from PM2.5 decreased in the Baltimore City, Maryland (fips == "24510") from 1999 to 2008? Use the base plotting system to make a plot answering this question.  
 
@@ -97,8 +95,8 @@ axis(1, at = c(1999,2002,2005,2008))
 text(plot2$year, plot2$total_pm25 - 250, labels = (round(plot2$total_pm25, digits = 0)), col = "red")
 ```
 
-<br>
-#### 3. Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999-2008 for Baltimore City? Which have seen increases in emissions from 1999-2008? Use the ggplot2 plotting system to make a plot answer this question.
+
+#### 3. Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999-2008 for Baltimore City? Which have seen increases in emissions from 1999-2008? Use the ggplot2 plotting system to make a plot answer this question.  
 
 All types except for "Point" decreased over this 19 year period. In this chart, you can see that "Point" emissions were the major cause for the overall spike on 2005, as all other types either decreased or only increased slightly from 2002 - 2005.  
 
@@ -130,8 +128,8 @@ ggplot(data = plot3, mapping = aes(year, total_pm25)) +
        shape = "Emission type")
 ```
 
-<br>
-#### 4. Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008?
+
+#### 4. Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008?  
 
 There are a variety of different types of coal combustion-related emission sources, and I have laid out the separate data for each below, using axes appropriate to the specific source levels. You can see that all types of emissions besides Industrial and Total Area Source decreased or stayed flat during this time.  
 
@@ -181,7 +179,7 @@ plot4 %>%
        y = "PM2.5 Emissions (kilotons)",
        color = "Emission Type")
 ```
-<br>  
+   
 #### 5. How have emissions from motor vehicle sources changed from 1999-2008 in Baltimore City?  
 
 The major change over time is in emissions from gasoline vehicles. You can see that diesel emissions stayed relatively flat from 1999 - 2008, but gasoline vehicle emissions decreased dramatically over that time, likely due to more hybrid cars on the road over time.  
@@ -212,8 +210,9 @@ ggplot(plot5, aes(year, total)) +
        title = "Motor Vehicle Emissions have dramatically decreased in Baltimore City since 1999",
        subtitle = "Diesel vehicle emissions have stayed relatively flat, with the big difference coming from a huge decrease in gasoline vehicle emissions")
 ```
-<br> 
-#### 6. Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions? 
+  
+
+#### 6. Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?  
 
 The first plot shows the points and overall trend for both counties, and at first glance it seems that the slope of LA's emissions is steeper. This first chart seems misleading due to different axes - however, the scale of the emissions is so different, that showing both counties on one axis wouldn't give much insight into Baltimore's trends.  
 
